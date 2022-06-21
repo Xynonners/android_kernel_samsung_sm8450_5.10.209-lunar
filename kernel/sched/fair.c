@@ -7178,10 +7178,10 @@ static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
  * task.
  */
 static long
-compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+compute_energy(struct task_struct *p, int dst_cpu, struct cpumask *cpus,
+	       struct perf_domain *pd)
 {
-	struct cpumask *pd_mask = perf_domain_span(pd);
-	unsigned long cpu_cap = arch_scale_cpu_capacity(cpumask_first(pd_mask));
+	unsigned long cpu_cap = arch_scale_cpu_capacity(cpumask_first(cpus));
 	unsigned long max_util = 0, sum_util = 0;
 	unsigned long energy = 0;
 	int cpu;
@@ -7195,7 +7195,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 	 * If an entire pd is outside of the current rd, it will not appear in
 	 * its pd list and will not be accounted by compute_energy().
 	 */
-	for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
+	for_each_cpu(cpu, cpus) {
 		unsigned long cpu_util, util_cfs = cpu_util_next(cpu, p, dst_cpu);
 		struct task_struct *tsk = cpu == dst_cpu ? p : NULL;
 
@@ -7268,6 +7268,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
  */
 static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sync)
 {
+	struct cpumask *cpus = this_cpu_cpumask_var_ptr(select_rq_mask);
 	unsigned long prev_delta = ULONG_MAX, best_delta = ULONG_MAX;
 	unsigned long p_util_min = uclamp_is_used() ? uclamp_eff_value(p, UCLAMP_MIN) : 0;
 	unsigned long p_util_max = uclamp_is_used() ? uclamp_eff_value(p, UCLAMP_MAX) : 1024;
@@ -7326,10 +7327,12 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sy
 		int max_spare_cap_cpu = -1;
 
 		/* Compute the 'base' energy of the pd, without @p */
-		base_energy_pd = compute_energy(p, -1, pd);
+		base_energy_pd = compute_energy(p, -1, cpus, pd);
 		base_energy += base_energy_pd;
 
-		for_each_cpu_and(cpu, perf_domain_span(pd), sched_domain_span(sd)) {
+		cpumask_and(cpus, perf_domain_span(pd), cpu_online_mask);
+
+		for_each_cpu_and(cpu, cpus, sched_domain_span(sd)) {
 			if (!cpumask_test_cpu(cpu, p->cpus_ptr))
 				continue;
 
@@ -7375,7 +7378,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sy
 
 			/* Always use prev_cpu as a candidate. */
 			if (!latency_sensitive && cpu == prev_cpu) {
-				prev_delta = compute_energy(p, prev_cpu, pd);
+				prev_delta = compute_energy(p, prev_cpu, cpus, pd);
 				prev_delta -= base_energy_pd;
 				best_delta = min(best_delta, prev_delta);
 			}
@@ -7416,7 +7419,8 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sy
 		/* Evaluate the energy impact of using this CPU. */
 		if (!latency_sensitive && max_spare_cap_cpu >= 0 &&
 						max_spare_cap_cpu != prev_cpu) {
-			cur_delta = compute_energy(p, max_spare_cap_cpu, pd);
+			cur_delta = compute_energy(p, max_spare_cap_cpu, cpus,
+						   pd);
 			cur_delta -= base_energy_pd;
 			if (cur_delta < best_delta) {
 				best_delta = cur_delta;
