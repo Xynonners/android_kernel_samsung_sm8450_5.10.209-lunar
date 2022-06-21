@@ -7275,7 +7275,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sy
 	struct root_domain *rd = cpu_rq(smp_processor_id())->rd;
 	int max_spare_cap_cpu_ls = prev_cpu, best_idle_cpu = -1;
 	unsigned long max_spare_cap_ls = 0, target_cap;
-	unsigned long cpu_cap, util, base_energy = 0;
+	unsigned long cpu_cap, util, base_energy;
 	bool boosted, latency_sensitive = false;
 	unsigned int min_exit_lat = UINT_MAX;
 	int cpu, best_energy_cpu = prev_cpu;
@@ -7323,12 +7323,10 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sy
 		unsigned long cur_delta, spare_cap, max_spare_cap = 0;
 		unsigned long rq_util_min, rq_util_max;
 		unsigned long util_min, util_max;
-		unsigned long base_energy_pd;
 		int max_spare_cap_cpu = -1;
 
 		/* Compute the 'base' energy of the pd, without @p */
-		base_energy_pd = compute_energy(p, -1, cpus, pd);
-		base_energy += base_energy_pd;
+		base_energy = compute_energy(p, -1, cpus, pd);
 
 		cpumask_and(cpus, perf_domain_span(pd), cpu_online_mask);
 
@@ -7379,7 +7377,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sy
 			/* Always use prev_cpu as a candidate. */
 			if (!latency_sensitive && cpu == prev_cpu) {
 				prev_delta = compute_energy(p, prev_cpu, cpus, pd);
-				prev_delta -= base_energy_pd;
+				prev_delta -= base_energy;
 				best_delta = min(best_delta, prev_delta);
 			}
 
@@ -7421,7 +7419,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sy
 						max_spare_cap_cpu != prev_cpu) {
 			cur_delta = compute_energy(p, max_spare_cap_cpu, cpus,
 						   pd);
-			cur_delta -= base_energy_pd;
+			cur_delta -= base_energy;
 			if (cur_delta < best_delta) {
 				best_delta = cur_delta;
 				best_energy_cpu = max_spare_cap_cpu;
@@ -7434,14 +7432,7 @@ unlock:
 	if (latency_sensitive)
 		return best_idle_cpu >= 0 ? best_idle_cpu : max_spare_cap_cpu_ls;
 
-	/*
-	 * Pick the best CPU if prev_cpu cannot be used, or if it saves at
-	 * least 6% of the energy used by prev_cpu.
-	 */
-	if (prev_delta == ULONG_MAX)
-		return best_energy_cpu;
-
-	if ((prev_delta - best_delta) > ((prev_delta + base_energy) >> 4))
+	if (best_delta < prev_delta)
 		return best_energy_cpu;
 
 	return prev_cpu;
