@@ -673,6 +673,16 @@ static void mem_cgroup_update_tree(struct mem_cgroup *memcg, int nid)
 	struct mem_cgroup_per_node *mz;
 	struct mem_cgroup_tree_per_node *mctz;
 
+	if (lru_gen_enabled()) {
+		struct lruvec *lruvec = &memcg->nodeinfo[nid]->lruvec;
+
+		/* see the comment on MEMCG_NR_GENS */
+		if (soft_limit_excess(memcg) && lru_gen_memcg_seg(lruvec) != MEMCG_LRU_HEAD)
+			lru_gen_rotate_memcg(lruvec, MEMCG_LRU_HEAD);
+
+		return;
+	}
+
 	mctz = soft_limit_tree_node(nid);
 	if (!mctz)
 		return;
@@ -3508,6 +3518,9 @@ unsigned long mem_cgroup_soft_limit_reclaim(pg_data_t *pgdat, int order,
 	unsigned long excess;
 	unsigned long nr_scanned;
 
+	if (lru_gen_enabled())
+		return 0;
+
 	if (order > 0)
 		return 0;
 
@@ -5549,6 +5562,7 @@ static int mem_cgroup_css_online(struct cgroup_subsys_state *css)
 	/* Online state pins memcg ID, memcg ID pins CSS */
 	refcount_set(&memcg->id.ref, 1);
 	css_get(css);
+	lru_gen_online_memcg(memcg);
 	trace_android_vh_mem_cgroup_css_online(css, memcg);
 	return 0;
 }
@@ -5578,6 +5592,7 @@ static void mem_cgroup_css_offline(struct cgroup_subsys_state *css)
 	wb_memcg_offline(memcg);
 
 	drain_all_stock(memcg);
+	lru_gen_offline_memcg(memcg);
 
 	mem_cgroup_id_put(memcg);
 }
@@ -5587,6 +5602,7 @@ static void mem_cgroup_css_released(struct cgroup_subsys_state *css)
 	struct mem_cgroup *memcg = mem_cgroup_from_css(css);
 
 	invalidate_reclaim_iterators(memcg);
+	lru_gen_release_memcg(memcg);
 }
 
 static void mem_cgroup_css_free(struct cgroup_subsys_state *css)
