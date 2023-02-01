@@ -330,7 +330,7 @@ void update_rq_clock(struct rq *rq)
 #endif
 
 	delta = sched_clock_cpu(cpu_of(rq)) - rq->clock;
-	if (delta < 0)
+	if (unlikely(delta < 0))
 		return;
 	rq->clock += delta;
 	update_rq_clock_task(rq, delta);
@@ -6369,7 +6369,7 @@ SYSCALL_DEFINE0(sched_yield)
 #ifndef CONFIG_PREEMPTION
 int __sched _cond_resched(void)
 {
-	if (should_resched(0)) {
+	if (unlikely(should_resched(0))) {
 		preempt_schedule_common();
 		return 1;
 	}
