@@ -472,6 +472,9 @@ struct sched_entity {
 	s64				vlag;
 
 	u64				nr_migrations;
+	u64				prev_sleep_sum_runtime;
+	/* average duration of a task */
+	u64				dur_avg;
 
 	struct sched_statistics		statistics;
 
