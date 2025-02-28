@@ -37,7 +37,6 @@ clang(){
   if [ ! -d $PARENT_DIR/clang-r416183b ]; then
     pause 'clone Android Clang/LLVM Prebuilts'
     git clone https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r416183b $PARENT_DIR/clang-r416183b
-    . $DIR/build_menu
   fi
 }
 
@@ -45,7 +44,6 @@ gas(){
   if [ ! -d $PARENT_DIR/gas/linux-x86 ]; then
     pause 'clone prebuilt binaries of GNU `as` (the assembler)'
     git clone https://android.googlesource.com/platform/prebuilts/gas/linux-x86 $PARENT_DIR/gas/linux-x86
-    . $DIR/build_menu
   fi
 }
 
@@ -53,7 +51,6 @@ build_tools(){
   if [ ! -d $PARENT_DIR/build-tools ]; then
     pause 'clone prebuilt binaries of build tools'
     git clone https://android.googlesource.com/platform/prebuilts/build-tools $PARENT_DIR/build-tools
-    . $DIR/build_menu
   fi
 }
 
@@ -78,7 +75,7 @@ variant(){
     pause 'continue'
   else
     pause 'return to Main menu' 'Invalid option, '
-    . $DIR/build_menu
+    return 1
   fi
 }
 
@@ -91,11 +88,35 @@ clean(){
   pause 'continue'
 }
 
+load_config() {
+  if [ ! -f "$OUT_DIR/.config" ]; then
+    echo "No .config found, using default defconfig..."
+    make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV teacaet_${VARIANT}_defconfig
+  else
+    echo "Using existing .config..."
+  fi
+}
+
+menuconfig(){
+  variant || return 1
+  echo "${BGREEN}***** Opening menuconfig *****${STD}"
+
+  load_config
+
+  make -j$(nproc) -C $(pwd) O=$(pwd)/out oldconfig
+  make -j$(nproc) -C $(pwd) O=$(pwd)/out menuconfig
+
+  echo "${BGREEN}***** Configuration Saved *****${STD}"
+  pause 'continue'
+}
+
 build_kernel(){
-  variant
+  variant || return 1
   echo "${BGREEN}***** Compiling kernel *****${STD}"
   [ ! -d "$OUT_DIR" ] && mkdir $OUT_DIR
-  make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV teacaet_${VARIANT}_defconfig
+
+  load_config
+
   make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV
 
   [ -e $OUT_DIR/arch/arm64/boot/Image.gz ] && cp $OUT_DIR/arch/arm64/boot/Image.gz $OUT_DIR/Image.gz
@@ -106,6 +127,7 @@ build_kernel(){
     pause 'continue'
   else
     pause 'return to Main menu' 'Kernel STUCK in BUILD!, '
+    return 1
   fi
 }
 
@@ -114,7 +136,7 @@ anykernel3(){
     pause 'clone AnyKernel3 - Flashable Zip Template'
     git clone https://github.com/osm0sis/AnyKernel3 $PARENT_DIR/AnyKernel3
   fi
-  variant
+  variant || return 1
   if [ -e $OUT_DIR/arch/arm64/boot/Image ]; then
     cd $PARENT_DIR/AnyKernel3
     git reset --hard
@@ -133,11 +155,12 @@ anykernel3(){
     sed -i "s/patch_fstab/#patch_fstab/g" anykernel.sh
     sed -i "s/dump_boot/split_boot/g" anykernel.sh
     sed -i "s/write_boot/flash_boot/g" anykernel.sh
-    zip -r9 /mnt/hgfs/vmshare/${VARIANT}_kernel_`cat $OUT_DIR/include/config/kernel.release`_`date '+%Y_%m_%d'`.zip * -x .git README.md *placeholder
+    zip -r9 out/${VARIANT}_kernel_`cat $OUT_DIR/include/config/kernel.release`_`date '+%Y_%m_%d'`.zip * -x .git README.md *placeholder
     cd $DIR
     pause 'continue'
   else
     pause 'return to Main menu' 'Build kernel first, '
+    return 1
   fi
 }
 
@@ -151,20 +174,23 @@ show_menus(){
   clear
   echo "${ON_BLUE}TEACAET-KERNEL-BUILD menu $menu_version${STD}"
   echo " 1. ${UNDER_LINE}B${STD}uild kernel"
-  echo " 2. ${UNDER_LINE}C${STD}lean"
-  echo " 3. Make ${UNDER_LINE}f${STD}lashable zip"
-  echo " 4. E${UNDER_LINE}x${STD}it"
+  echo " 2. ${UNDER_LINE}M${STD}enuconfig"
+  echo " 3. ${UNDER_LINE}C${STD}lean"
+  echo " 4. Make ${UNDER_LINE}f${STD}lashable zip"
+  echo " 5. E${UNDER_LINE}x${STD}it"
 }
+
 
 # Read input
 read_options(){
   local choice
-  read -p "Enter choice [ 1 - 4 ] " choice
+  read -p "Enter choice [ 1 - 5 ] " choice
   case $choice in
     1|b|B) build_kernel ;;
-    2|c|C) clean ;;
-    3|f|F) anykernel3 ;;
-    4|x|X) exit 0 ;;
+    2|m|M) menuconfig ;;
+    3|c|C) clean ;;
+    4|f|F) anykernel3 ;;
+    5|x|X) exit 0 ;;
     *) pause 'return to Main menu' 'Invalid option, '
   esac
 }
