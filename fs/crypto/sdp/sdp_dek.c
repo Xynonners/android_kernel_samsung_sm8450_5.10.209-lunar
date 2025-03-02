@@ -5,6 +5,7 @@
 #include <linux/kthread.h>
 #include <linux/pagemap.h>
 #include <linux/string.h>
+#include <linux/magic.h>
 #include <asm/unaligned.h>
 
 #include <sdp/fs_handler.h>
