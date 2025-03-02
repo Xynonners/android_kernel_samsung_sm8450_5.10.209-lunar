@@ -110,6 +110,11 @@ menuconfig(){
   pause 'continue'
 }
 
+diff_config() {
+  diff out/.config arch/arm64/configs/teacaet_mc-waipio-gki_defconfig
+  pause 'continue'
+}
+
 save_config() {
   echo "${BGREEN}***** Saving config to arch/arm64/configs/teacaet_mc-waipio-gki_defconfig *****${STD}"
   if [ -f "$OUT_DIR/.config" ]; then
@@ -186,24 +191,26 @@ show_menus(){
   echo "${ON_BLUE}TEACAET-KERNEL-BUILD menu $menu_version${STD}"
   echo " 1. ${UNDER_LINE}B${STD}uild kernel"
   echo " 2. ${UNDER_LINE}M${STD}enuconfig"
-  echo " 3. ${UNDER_LINE}S${STD}ave config"
-  echo " 4. ${UNDER_LINE}C${STD}lean"
-  echo " 5. Make ${UNDER_LINE}f${STD}lashable zip"
-  echo " 6. E${UNDER_LINE}x${STD}it"
+  echo " 3. ${UNDER_LINE}D${STD}iff config"
+  echo " 4. ${UNDER_LINE}S${STD}ave config"
+  echo " 5. ${UNDER_LINE}C${STD}lean"
+  echo " 6. Make ${UNDER_LINE}f${STD}lashable zip"
+  echo " 7. E${UNDER_LINE}x${STD}it"
 }
 
 
 # Read input
 read_options(){
   local choice
-  read -p "Enter choice [ 1 - 6 ] " choice
+  read -p "Enter choice [ 1 - 7 ] " choice
   case $choice in
     1|b|B) build_kernel ;;
     2|m|M) menuconfig ;;
-    3|s|S) save_config ;;
-    4|c|C) clean ;;
-    5|f|F) anykernel3 ;;
-    6|x|X) exit 0 ;;
+    3|s|S) diff_config ;;
+    4|s|S) save_config ;;
+    5|c|C) clean ;;
+    6|f|F) anykernel3 ;;
+    7|x|X) exit 0 ;;
     *) pause 'return to Main menu' 'Invalid option, '
   esac
 }
