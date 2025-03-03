@@ -18,6 +18,18 @@ export PATH=$PARENT_DIR/gas/linux-x86:$PATH
 export TARGET_SOC=waipio
 export LLVM=1 LLVM_IAS=1
 export ARCH=arm64
+#enable literally everything. Will this crash? I don't know :)
+#https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b/blob/54220fd601050b350b2af7adc913089ebf0e7aed/include/llvm/Support/AArch64TargetParser.def
+#mtune is ignored on clang<14, need to fix later
+#https://releases.llvm.org/14.0.0/tools/clang/docs/ReleaseNotes.html
+export config KCFLAGS='
+-pipe
+-march=armv8.7-a+crc+lse+rdm+crypto+sm4+sha3+sha2+aes+dotprod+fp+simd+fp16+fp16fml+profile+ras+sve+sve2+sve2-aes+sve2-sm4+sve2-sha3+sve2-bitperm+rcpc+rng+memtag+ssbs+sb+predres+bf16+i8mm+f32mm+f64mm+tme+ls64+brbe+pauth+flagm
+-mtune=cortex-a78
+-mno-outline
+-mno-outline-atomics
+-fno-unroll-loops
+'
 KERNEL_MAKE_ENV="LOCALVERSION=-teacaet"
 
 # Color
