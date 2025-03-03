@@ -1833,6 +1833,12 @@ config ARM64_MTE
 
 endmenu
 
+config AS_HAS_ARMV8_6
+	def_bool $(cc-option,-Wa$(comma)-march=armv8.6-a)
+
+config AS_HAS_ARMV8_7
+	def_bool $(cc-option,-Wa$(comma)-march=armv8.7-a)
+
 config ARM64_SVE
 	bool "ARM Scalable Vector Extension support"
 	default y
