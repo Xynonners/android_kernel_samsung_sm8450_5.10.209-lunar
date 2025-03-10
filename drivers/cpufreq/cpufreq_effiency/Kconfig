@@ -1,0 +1,9 @@
+config OPLUS_FEATURE_CPUFREQ_EFFIENCY
+	tristate "OPLUS CPUFreq Effiency Driver"
+	default n
+	help
+	  Enable dynamic CPU frequency selection based on power domain effiency.
+
+	  This feature optimizes CPU frequency transitions by selecting
+	  the most effient frequency point based on the current operating
+	  frequency and the power domain characteristics.

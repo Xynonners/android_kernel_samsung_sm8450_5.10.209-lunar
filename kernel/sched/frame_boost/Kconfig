@@ -1,0 +1,21 @@
+menu "Oplus Frame Boost Features"
+
+config OPLUS_FEATURE_FRAME_BOOST
+    bool "Enable Oplus Frame Boost"
+    default n
+    help
+      This option enables Oplus Frame Boost, a CPU scheduling optimization
+      that improves UI rendering and gaming performance by dynamically
+      adjusting CPU frequencies and task placements.
+
+config OPLUS_FRAME_MULTI_FBG
+    bool "Enable Multi Frame Boost Group (Multi-FBG)"
+    depends on OPLUS_FEATURE_FRAME_BOOST
+    default n
+    help
+      Multi-FBG (Multi Frame Boost Group) is an improved version of Oplus
+      Frame Boost that provides more efficient CPU scheduling by managing
+      multiple frame-rendering threads in groups. This improves UI smoothness
+      and gaming performance while reducing power consumption.
+
+endmenu

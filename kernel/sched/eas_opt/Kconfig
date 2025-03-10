@@ -1,0 +1,26 @@
+menu "Oplus EAS Optimizations"
+
+config OPLUS_FEATURE_EAS_OPT
+    bool "Enable Oplus Energy Aware Scheduling (EAS) Optimization"
+    default n
+    help
+      Enable this option to include Oplus-specific EAS optimizations
+      that improve CPU scheduling for better power efficiency.
+
+config OPLUS_EAS_FAKE_CAP
+    bool "Enable Fake CPU Capacity Adjustment"
+    default n
+    depends on OPLUS_FEATURE_EAS_OPT
+    help
+      This enables a fake CPU capacity mechanism, allowing dynamic
+      adjustment of CPU capacities for better load balancing.
+
+config OPLUS_EAS_CPUFREQ_IOWAIT_PROTECT
+    bool "Enable CPUFreq IO Wait Protection"
+    default n
+    depends on OPLUS_FEATURE_EAS_OPT
+    help
+      Enables IO wait-based CPU frequency protection, improving
+      responsiveness under high IO wait conditions.
+
+endmenu

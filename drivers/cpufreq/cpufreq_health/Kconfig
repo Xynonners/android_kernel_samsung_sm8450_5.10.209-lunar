@@ -1,0 +1,7 @@
+config OPLUS_FEATURE_CPUFREQ_HEALTH
+	tristate "OPLUS CPUFreq Health Driver"
+	depends on SMP
+	default n
+	help
+	  Enable the OPLUS CPUFreq Health Driver which collects and reports
+	  statistics related to CPU frequency scaling and voltage regulation.

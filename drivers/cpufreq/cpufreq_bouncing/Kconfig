@@ -1,0 +1,6 @@
+config OPLUS_FEATURE_CPUFREQ_BOUNCING
+	tristate "OPLUS CPUFreq Bouncing Driver"
+	default n
+	help
+	  Dynamically adjust the maximum CPU frequency based on CPU utilization
+	  and busy duration.

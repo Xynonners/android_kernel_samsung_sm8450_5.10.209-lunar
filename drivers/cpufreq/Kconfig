@@ -210,6 +210,8 @@ config CPU_FREQ_GOV_SCHEDUTIL
 
 	  If in doubt, say N.
 
+source "kernel/sched/uag/Kconfig"
+
 comment "CPU frequency scaling drivers"
 
 config CPUFREQ_DT
@@ -241,6 +243,12 @@ config CPUFREQ_DUMMY
 	  nothing.
 
 	  If in doubt, say N
+
+source "drivers/cpufreq/cpufreq_health/Kconfig"
+source "drivers/cpufreq/cpufreq_bouncing/Kconfig"
+source "drivers/cpufreq/cpufreq_effiency/Kconfig"
+source "kernel/sched/eas_opt/Kconfig"
+source "kernel/sched/frame_boost/Kconfig"
 
 if X86
 source "drivers/cpufreq/Kconfig.x86"
