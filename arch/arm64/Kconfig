@@ -1839,6 +1839,9 @@ config AS_HAS_ARMV8_6
 config AS_HAS_ARMV8_7
 	def_bool $(cc-option,-Wa$(comma)-march=armv8.7-a)
 
+config AS_HAS_ARMV9
+	def_bool $(cc-option,-Wa$(comma)-march=armv9-a) && CC_IS_CLANG && CLANG_VERSION >= 140000
+
 config ARM64_SVE
 	bool "ARM Scalable Vector Extension support"
 	default y

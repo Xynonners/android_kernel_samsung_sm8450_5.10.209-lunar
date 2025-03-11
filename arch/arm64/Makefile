@@ -111,6 +111,11 @@ ifeq ($(CONFIG_AS_HAS_ARMV8_7), y)
 asm-arch := armv8.7-a
 endif
 
+ifeq ($(CONFIG_AS_HAS_ARMV9), y)
+# make sure to pass the newest target architecture to -march.
+asm-arch := armv9-a
+endif
+
 ifdef asm-arch
 KBUILD_CFLAGS	+= -Wa,-march=$(asm-arch) \
 		   -DARM64_ASM_ARCH='"$(asm-arch)"'

@@ -7,26 +7,27 @@ DIR=`readlink -f .`
 OUT_DIR=$DIR/out
 PARENT_DIR=`readlink -f ${DIR}/..`
 
-export CROSS_COMPILE=$PARENT_DIR/clang-r416183b/bin/aarch64-linux-gnu-
-export CC=$PARENT_DIR/clang-r416183b/bin/clang
+export CROSS_COMPILE=$PARENT_DIR/clang-r416183c2/bin/aarch64-linux-gnu-
+export CC=$PARENT_DIR/clang-r416183c2/bin/clang
 
 export PLATFORM_VERSION=12
 export ANDROID_MAJOR_VERSION=s
-export PATH=$PARENT_DIR/clang-r416183b/bin:$PATH
+export PATH=$PARENT_DIR/clang-r416183c2/bin:$PATH
 export PATH=$PARENT_DIR/build-tools/path/linux-x86:$PATH
 export PATH=$PARENT_DIR/gas/linux-x86:$PATH
 export TARGET_SOC=waipio
 export LLVM=1 LLVM_IAS=1
 export ARCH=arm64
 #enable literally everything. Will this crash? I don't know :)
-#https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b/blob/54220fd601050b350b2af7adc913089ebf0e7aed/include/llvm/Support/AArch64TargetParser.def
-#mtune is ignored on clang<14, need to fix later
+#https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/10591e8f9e7620c943a973ee593431b5d7a48b83/clang-r416183c2/include/llvm/Support/AArch64TargetParser.def
+#mtune is ignored on clang<14, see
 #https://releases.llvm.org/14.0.0/tools/clang/docs/ReleaseNotes.html
+#to test: echo | ../clang-r416183c2/bin/clang -E - --target=aarch64-linux-gnu -march=** -mcpu=** -mtune=** -###
 export config KCFLAGS='
 -Wfatal-errors
 -pipe
 -march=armv8.7-a+crc+lse+rdm+crypto+sm4+sha3+sha2+aes+dotprod+fp+simd+fp16+fp16fml+profile+ras+sve+sve2+sve2-aes+sve2-sm4+sve2-sha3+sve2-bitperm+rcpc+rng+memtag+ssbs+sb+predres+bf16+i8mm+f32mm+f64mm+tme+ls64+brbe+pauth+flagm
--mtune=cortex-a78
+-mcpu=cortex-a78
 -mno-outline
 -mno-outline-atomics
 -fno-unroll-loops
@@ -47,9 +48,13 @@ pause(){
 }
 
 clang(){
-  if [ ! -d $PARENT_DIR/clang-r416183b ]; then
-    pause 'clone Android Clang/LLVM Prebuilts'
-    git clone https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r416183b $PARENT_DIR/clang-r416183b
+  if [ ! -d $PARENT_DIR/clang-r416183c2 ]; then
+#     pause 'clone Android Clang/LLVM Prebuilts'
+#     git clone https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r416183b $PARENT_DIR/clang-r416183b
+    pause 'dl Android Clang/LLVM Prebuilts'
+    wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/10591e8f9e7620c943a973ee593431b5d7a48b83/clang-r416183c2.tar.gz -O $PARENT_DIR/clang-r416183c2.tar.gz
+    mkdir $PARENT_DIR/clang-r416183c2
+    tar -xzf $PARENT_DIR/clang-r416183c2.tar.gz -C $PARENT_DIR/clang-r416183c2
   fi
 }
 
