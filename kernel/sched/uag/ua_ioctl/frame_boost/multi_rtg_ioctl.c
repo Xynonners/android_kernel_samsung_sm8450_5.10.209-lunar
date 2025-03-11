@@ -626,20 +626,27 @@ static char *get_stune_boost_name(int type)
 static ssize_t proc_stune_boost_read(struct file *file, char __user *buf,
 		size_t count, loff_t *ppos)
 {
-	char buffer[4096];
+	char *buffer;
+	ssize_t ret;
 	int i, grp_id;
 	size_t len = 0;
 
-	for (grp_id = 1; grp_id < MAX_NUM_FBG_ID; grp_id++) {
-		len += snprintf(buffer + len, sizeof(buffer) - len, "grp_id:%d\n", grp_id);
-		for (i = 0; i < BOOST_MAX_TYPE; ++i)
-			len += snprintf(buffer + len, sizeof(buffer) - len, "%s:%d ",
-				get_stune_boost_name(i), fbg_get_stune_boost(grp_id, i));
-		len += snprintf(buffer + len, sizeof(buffer) - len, "\n");
-	}
-	len += snprintf(buffer + len, sizeof(buffer) - len, "\n");
+	buffer = kmalloc(4096, GFP_KERNEL);
+	if (!buffer)
+		return -ENOMEM;
 
-	return simple_read_from_buffer(buf, count, ppos, buffer, len);
+	for (grp_id = 1; grp_id < MAX_NUM_FBG_ID; grp_id++) {
+		len += snprintf(buffer + len, 4096 - len, "grp_id:%d\n", grp_id);
+		for (i = 0; i < BOOST_MAX_TYPE; ++i)
+			len += snprintf(buffer + len, 4096 - len, "%s:%d ",
+				get_stune_boost_name(i), fbg_get_stune_boost(grp_id, i));
+		len += snprintf(buffer + len, 4096 - len, "\n");
+	}
+	len += snprintf(buffer + len, 4096 - len, "\n");
+
+	ret = simple_read_from_buffer(buf, count, ppos, buffer, len);
+	kfree(buffer);
+	return ret;
 }
 
 static const struct proc_ops ofb_stune_boost_fops = {

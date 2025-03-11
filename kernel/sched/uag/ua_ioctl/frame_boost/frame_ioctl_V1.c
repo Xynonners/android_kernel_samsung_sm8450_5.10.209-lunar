@@ -722,16 +722,23 @@ static char * get_stune_boost_name(int type) {
 static ssize_t proc_stune_boost_read(struct file *file, char __user *buf,
 		size_t count, loff_t *ppos)
 {
-	char buffer[1024];
+	char *buffer;
+	ssize_t ret;
 	int i;
 	size_t len = 0;
 
+	buffer = kmalloc(1024, GFP_KERNEL);
+	if (!buffer)
+		return -ENOMEM;
+
 	for (i = 0; i < BOOST_MAX_TYPE; ++i)
-		len += snprintf(buffer + len, sizeof(buffer) - len, "%s:%d, ", get_stune_boost_name(i), fbg_get_stune_boost(i));
+		len += snprintf(buffer + len, 1024 - len, "%s:%d, ", get_stune_boost_name(i), fbg_get_stune_boost(i));
 
-	len += snprintf(buffer + len, sizeof(buffer) - len, "\n");
+	len += snprintf(buffer + len, 1024 - len, "\n");
 
-	return simple_read_from_buffer(buf, count, ppos, buffer, len);
+	ret = simple_read_from_buffer(buf, count, ppos, buffer, len);
+	kfree(buffer);
+	return ret;
 }
 
 static const struct proc_ops ofb_stune_boost_fops = {
