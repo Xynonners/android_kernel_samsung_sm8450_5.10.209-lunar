@@ -18,4 +18,19 @@ config OPLUS_FRAME_MULTI_FBG
       multiple frame-rendering threads in groups. This improves UI smoothness
       and gaming performance while reducing power consumption.
 
+config OPLUS_FRAME_VT_CAP
+	bool
+	default n
+	depends on OPLUS_FEATURE_FRAME_BOOST && OPLUS_FRAME_MULTI_FBG
+
+config OPLUS_FEATURE_SLIDE_BOOST
+	bool
+	default n
+	depends on OPLUS_FEATURE_FRAME_BOOST && OPLUS_FRAME_MULTI_FBG
+
+config OPLUS_SCHED_ADD_CORE_CTRL_MASK
+	bool "Add core_ctrl mask cpu"
+	default n
+	depends on OPLUS_FEATURE_FRAME_BOOST
+
 endmenu

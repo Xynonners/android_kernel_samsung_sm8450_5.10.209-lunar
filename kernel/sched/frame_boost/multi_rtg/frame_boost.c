@@ -23,7 +23,7 @@ static struct kprobe kp = {
 	.symbol_name    = "rb_simple_write",
 };
 
-#if IS_ENABLED(CONFIG_OPLUS_FEATURE_SF_SLIDE_BOOST)
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_SLIDE_BOOST)
 static inline bool slide_boost_scene(void)
 {
 	return sysctl_slide_boost_enabled || sysctl_input_boost_enabled
