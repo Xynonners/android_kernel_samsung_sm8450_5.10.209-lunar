@@ -65,6 +65,7 @@ struct dst_entry {
 	 */
 #ifdef CONFIG_64BIT
 	atomic_t		__refcnt;	/* 64-bit offset 64 */
+	int			__pad2[15];
 #endif
 	int			__use;
 	unsigned long		lastuse;
