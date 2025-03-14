@@ -7,8 +7,11 @@ DIR=`readlink -f .`
 OUT_DIR=$DIR/out
 PARENT_DIR=`readlink -f ${DIR}/..`
 
+export CCACHE_COMPILERCHECK=content
+export CCACHE_SLOPPINESS=pch_defines,time_macros
+
 export CROSS_COMPILE=$PARENT_DIR/clang-r416183c2/bin/aarch64-linux-gnu-
-export CC=$PARENT_DIR/clang-r416183c2/bin/clang
+export CC="ccache $PARENT_DIR/clang-r416183c2/bin/clang"
 
 export PLATFORM_VERSION=12
 export ANDROID_MAJOR_VERSION=s
@@ -30,8 +33,9 @@ export config KCFLAGS='
 -mcpu=cortex-a78
 -mno-outline
 -mno-outline-atomics
--fno-unroll-loops
+-fno-jump-tables
 '
+#see: https://github.com/llvm/llvm-project/issues/54644
 KERNEL_MAKE_ENV="LOCALVERSION=-teacaet"
 
 # Color
@@ -198,6 +202,12 @@ anykernel3(){
   fi
 }
 
+rej_delete(){
+  pause 'removing all *.rej files, abort now if unwanted'
+  find . -name "*.rej" -type f -delete
+  pause 'continue'
+}
+
 # Run once
 clang
 gas
@@ -212,23 +222,25 @@ show_menus(){
   echo " 3. ${UNDER_LINE}D${STD}iff config"
   echo " 4. ${UNDER_LINE}S${STD}ave config"
   echo " 5. ${UNDER_LINE}C${STD}lean"
-  echo " 6. Make ${UNDER_LINE}f${STD}lashable zip"
-  echo " 7. E${UNDER_LINE}x${STD}it"
+  echo " 6. ${UNDER_LINE}R${STD}emove all *.rej files"
+  echo " 7. Make ${UNDER_LINE}f${STD}lashable zip"
+  echo " 8. E${UNDER_LINE}x${STD}it"
 }
 
 
 # Read input
 read_options(){
   local choice
-  read -p "Enter choice [ 1 - 7 ] " choice
+  read -p "Enter choice [ 1 - 8 ] " choice
   case $choice in
     1|b|B) build_kernel ;;
     2|m|M) menuconfig ;;
-    3|s|S) diff_config ;;
+    3|d|D) diff_config ;;
     4|s|S) save_config ;;
     5|c|C) clean ;;
-    6|f|F) anykernel3 ;;
-    7|x|X) exit 0 ;;
+    6|r|R) rej_delete ;;
+    7|f|F) anykernel3 ;;
+    8|x|X) exit 0 ;;
     *) pause 'return to Main menu' 'Invalid option, '
   esac
 }
