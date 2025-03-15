@@ -196,4 +196,5 @@ obj-$(CONFIG_SPU_VERIFY)        += spu_verify/
 obj-$(CONFIG_UH)		+= uh/
 obj-y				+= knox/
 
+
 obj-$(CONFIG_KSU) += kernelsu/
