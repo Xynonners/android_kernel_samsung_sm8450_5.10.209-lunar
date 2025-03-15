@@ -285,8 +285,8 @@ void nlopp_map_util_freq(void *data, unsigned long util, unsigned long freq,
 #endif
 		j = info->util_opp[util];
 		*next_freq = info->util_freq[util];
-		trace_uag_next_freq_info(i, util, j, info->util_freq[util]);
 #ifdef CONFIG_OPLUS_UAG_USE_TL
+		trace_uag_next_freq_info(i, util, j, info->util_freq[util]);
 #ifdef CONFIG_ARCH_MEDIATEK
 		raw_util = min(raw_util, info->caps[0]);
 #else
