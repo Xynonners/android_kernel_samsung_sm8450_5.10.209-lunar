@@ -1,5 +1,5 @@
 #!/bin/bash
-# TEACAET-KERNEL-BUILD menu
+# TEACAET-XYNON-KERNEL-BUILD menu
 
 # Variables
 menu_version="v2.3"
@@ -36,7 +36,7 @@ export config KCFLAGS='
 -fno-jump-tables
 '
 #see: https://github.com/llvm/llvm-project/issues/54644
-KERNEL_MAKE_ENV="LOCALVERSION=-teacaet"
+KERNEL_MAKE_ENV="LOCALVERSION=-lunar"
 
 # Color
 ON_BLUE=`echo -e "\033[44m"`	# On Blue
@@ -155,7 +155,7 @@ build_kernel(){
 
   load_config
 
-  make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV
+  make -j$(nproc) -C $(pwd) KBUILD_BUILD_USER=moon KBUILD_BUILD_HOST=earth O=$(pwd)/out $KERNEL_MAKE_ENV
 
   [ -e $OUT_DIR/arch/arm64/boot/Image.gz ] && cp $OUT_DIR/arch/arm64/boot/Image.gz $OUT_DIR/Image.gz
   if [ -e $OUT_DIR/arch/arm64/boot/Image ]; then
@@ -179,7 +179,7 @@ anykernel3(){
     cd $PARENT_DIR/AnyKernel3
     git reset --hard
     cp $OUT_DIR/arch/arm64/boot/Image zImage
-    sed -i "s/ExampleKernel by osm0sis/${VARIANT} kernel by teacaet/g" anykernel.sh
+    sed -i "s/ExampleKernel by osm0sis/${VARIANT} kernel by teacaet & xynon/g" anykernel.sh
     sed -i "s/do\.devicecheck=1/do\.devicecheck=0/g" anykernel.sh
     sed -i "s/=maguro/=/g" anykernel.sh
     sed -i "s/=toroplus/=/g" anykernel.sh
@@ -216,7 +216,7 @@ build_tools
 # Show menu
 show_menus(){
   clear
-  echo "${ON_BLUE}TEACAET-KERNEL-BUILD menu $menu_version${STD}"
+  echo "${ON_BLUE}TEACAET-XYNON-KERNEL-BUILD menu $menu_version${STD}"
   echo " 1. ${UNDER_LINE}B${STD}uild kernel"
   echo " 2. ${UNDER_LINE}M${STD}enuconfig"
   echo " 3. ${UNDER_LINE}D${STD}iff config"
